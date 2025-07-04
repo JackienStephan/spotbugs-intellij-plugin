@@ -31,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 
 @State(
 		name = "FindBugs-IDEA",
-		storages = @Storage(file = StoragePathMacros.MODULE_FILE)
+		storages = @Storage(value = StoragePathMacros.MODULE_FILE)
 )
 public final class ModuleSettings extends AbstractSettings implements PersistentStateComponent<ModuleSettings> {
 

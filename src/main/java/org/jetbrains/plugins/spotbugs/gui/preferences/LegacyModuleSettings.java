@@ -38,7 +38,7 @@ import org.jetbrains.plugins.spotbugs.preferences.PersistencePreferencesBean;
  */
 @State(
 		name = FindBugsPluginConstants.PLUGIN_ID,
-		storages = {@Storage(file = "$MODULE_FILE$", deprecated = true)})
+		storages = {@Storage(value = "$MODULE_FILE$", deprecated = true)})
 public final class LegacyModuleSettings implements PersistentStateComponent<PersistencePreferencesBean> {
 
 	private static final Logger LOGGER = Logger.getInstance(LegacyModuleSettings.class);

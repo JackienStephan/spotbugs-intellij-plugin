@@ -26,6 +26,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.BrowserHyperlinkListener;
 import com.intellij.ui.HintHint;
 import com.intellij.ui.IdeBorderFactory;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.util.ui.UIUtil;
 import edu.umd.cs.findbugs.BugPattern;
@@ -161,6 +162,7 @@ final class DetectorDetailsPane extends JPanel {
 
 		final HintHint hintHint = new HintHint(description, new Point(0, 0));
 		hintHint.setFont(UIUtil.getLabelFont());
+		hintHint.setTextFg(JBColor.foreground());
 		latest = HintUtil.prepareHintText(body != null ? body : html, hintHint);
 
 	}

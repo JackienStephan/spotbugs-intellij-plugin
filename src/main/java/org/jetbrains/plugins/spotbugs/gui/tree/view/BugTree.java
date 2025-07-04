@@ -19,52 +19,33 @@
  */
 package org.jetbrains.plugins.spotbugs.gui.tree.view;
 
-import com.intellij.ide.OccurenceNavigator;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DataProvider;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.ide.*;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogBuilder;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.ui.PopupHandler;
-import com.intellij.util.EditSourceOnDoubleClickHandler;
-import com.intellij.util.OpenSourceUtil;
-import com.intellij.util.ui.UIUtil;
+import com.intellij.pom.Navigatable;
+import com.intellij.psi.*;
+import com.intellij.ui.*;
+import com.intellij.util.*;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.plugins.spotbugs.gui.common.AnalysisRunDetailsDialog;
-import org.jetbrains.plugins.spotbugs.gui.tree.BugTreeHelper;
+import org.jetbrains.annotations.*;
 import org.jetbrains.plugins.spotbugs.common.util.IdeaUtilImpl;
 import org.jetbrains.plugins.spotbugs.core.Bug;
-import org.jetbrains.plugins.spotbugs.gui.toolwindow.view.BugTreePanel;
-import org.jetbrains.plugins.spotbugs.gui.toolwindow.view.ToolWindowPanel;
-import org.jetbrains.plugins.spotbugs.gui.tree.ScrollToSourceHandler;
-import org.jetbrains.plugins.spotbugs.gui.tree.TreeOccurenceNavigator;
-import org.jetbrains.plugins.spotbugs.gui.tree.model.AbstractNodeDescriptor;
-import org.jetbrains.plugins.spotbugs.gui.tree.model.BugInstanceNode;
-import org.jetbrains.plugins.spotbugs.gui.tree.model.VisitableTreeNode;
+import org.jetbrains.plugins.spotbugs.gui.common.AnalysisRunDetailsDialog;
+import org.jetbrains.plugins.spotbugs.gui.toolwindow.view.*;
+import org.jetbrains.plugins.spotbugs.gui.tree.*;
+import org.jetbrains.plugins.spotbugs.gui.tree.model.*;
 
-import javax.swing.SwingUtilities;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.tree.*;
+import java.awt.*;
+import java.awt.event.*;
 
 @SuppressFBWarnings("SE_BAD_FIELD")
-public class BugTree extends Tree implements DataProvider, OccurenceNavigator {
+public class BugTree extends Tree implements UiDataProvider, OccurenceNavigator {
 
 	private final BugTreePanel _bugTreePanel;
 	private final Project _project;
@@ -87,10 +68,10 @@ public class BugTree extends Tree implements DataProvider, OccurenceNavigator {
 		addMouseMotionListener(new MouseMotionListenerImpl());
 		addMouseListener(new MouseListenerImpl());
 
-		if (UIUtil.isUnderDarcula()) {
+		if (!JBColor.isBright()) {
 			putClientProperty("JTree.lineStyle", "None");
 		} else {
-			UIUtil.setLineStyleAngled(this);
+			putClientProperty("JTree.lineStyle", "Angled");
 		}
 		setScrollsOnExpand(true);
 		getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
@@ -131,7 +112,7 @@ public class BugTree extends Tree implements DataProvider, OccurenceNavigator {
 					if (!(nodedescriptor instanceof BugInstanceNode)) {
 						return;
 					}
-					OpenSourceUtil.openSourcesFrom(BugTree.this::getData, true);
+					OpenSourceUtil.openSourcesFrom(DataManager.getInstance().getDataContext(BugTree.this), true);
 				}
 			}
 
@@ -139,18 +120,18 @@ public class BugTree extends Tree implements DataProvider, OccurenceNavigator {
 	}
 
 	@Override
-	public Object getData(@NonNls final String dataId) {
-		if (CommonDataKeys.VIRTUAL_FILE.is(dataId)) {
-			return getSelectedVirtualFile();
-		}
-		if (CommonDataKeys.NAVIGATABLE.is(dataId)) {
-			return getNavigatableData();
-		}
-		if (CommonDataKeys.VIRTUAL_FILE_ARRAY.is(dataId)) {
+	public void uiDataSnapshot(@NotNull DataSink dataSink) {
+
+		dataSink.lazy(CommonDataKeys.VIRTUAL_FILE, this::getSelectedVirtualFile);
+
+		dataSink.lazy(CommonDataKeys.NAVIGATABLE, this::getNavigatableData);
+
+		dataSink.lazy(CommonDataKeys.VIRTUAL_FILE_ARRAY, () -> {
 			final VirtualFile virtualFile = getSelectedVirtualFile();
 			return virtualFile != null ? new VirtualFile[]{virtualFile} : VirtualFile.EMPTY_ARRAY;
-		}
-		if (CommonDataKeys.PSI_ELEMENT.is(dataId)) {
+		});
+
+		dataSink.lazy(CommonDataKeys.PSI_ELEMENT, () -> {
 			final BugInstanceNode node = _treeHelper.getSelectedBugInstanceNode();
 			if (node == null) {
 				return null;
@@ -163,8 +144,7 @@ public class BugTree extends Tree implements DataProvider, OccurenceNavigator {
 				}
 			}
 			return psiFile;
-		}
-		return null;
+		});
 	}
 
 	@Nullable
@@ -179,14 +159,14 @@ public class BugTree extends Tree implements DataProvider, OccurenceNavigator {
 	}
 
 	@Nullable
-	private Object getNavigatableData() {
+	private Navigatable getNavigatableData() {
 		final BugInstanceNode node = _treeHelper.getSelectedBugInstanceNode();
 		if (node == null) {
 			return null;
 		}
 		final int[] lines = node.getSourceLines();
 		if (BugInstanceNode.isAnonymousClass(lines) || BugInstanceNode.isFirstLines(lines)) {
-			return IdeaUtilImpl.findPsiElement(node.getPsiFile(), node.getBugInstance(), _project);
+			return (Navigatable) IdeaUtilImpl.findPsiElement(node.getPsiFile(), node.getBugInstance(), _project);
 		}
 		final PsiFile psiFile = node.getPsiFile();
 		if (psiFile == null) {

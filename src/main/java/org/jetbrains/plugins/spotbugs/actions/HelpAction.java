@@ -20,6 +20,7 @@
 package org.jetbrains.plugins.spotbugs.actions;
 
 import com.intellij.ide.BrowserUtil;
+import com.intellij.ide.nls.NlsMessages;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ex.ApplicationInfoEx;
 import com.intellij.openapi.ide.CopyPasteManager;
@@ -125,7 +126,7 @@ public final class HelpAction extends AbstractAction {
 				ret.append("\n    IDEA: ").append(appInfo.getFullApplicationName());
 				ret.append("\n    IDEA-Build: ").append(appInfo.getBuild().asString());
 				final Calendar cal = appInfo.getBuildDate();
-				ret.append(", ").append(DateFormatUtil.formatAboutDialogDate(cal.getTime()));
+				ret.append(", ").append(NlsMessages.formatDateLong(cal.getTime()));
 				if (appInfo.getBuild().isSnapshot()) {
 					ret.append(" ").append(new SimpleDateFormat("HH:mm, ").format(cal.getTime()));
 				}

@@ -3,6 +3,7 @@
 /tmp/
 /out/
 .directory
+/.intellijPlatform/
 
 /.idea/workspace.xml
 /.idea/misc.xml

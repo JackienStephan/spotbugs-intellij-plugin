@@ -30,10 +30,10 @@ import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.ToggleAction;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.FilterComponent;
-import com.intellij.ui.ToggleActionButton;
 import com.intellij.util.Processor;
 import edu.umd.cs.findbugs.BugPattern;
 import edu.umd.cs.findbugs.DetectorFactory;
@@ -139,11 +139,12 @@ final class DetectorTableHeaderPane extends JPanel implements Disposable {
 		}
 	}
 
-	private class FilterHidden extends ToggleActionButton {
+	private class FilterHidden extends ToggleAction {
 		private boolean selected = true;
 
 		private FilterHidden() {
-			super(ResourcesLoader.getString("detector.filter.hidden"), AllIcons.General.Filter);
+			super(() -> ResourcesLoader.getString("detector.filter.hidden"),
+					AllIcons.General.Filter);
 		}
 
 		@Override

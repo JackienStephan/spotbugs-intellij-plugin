@@ -19,6 +19,7 @@
  */
 package org.jetbrains.plugins.spotbugs.actions;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -82,5 +83,10 @@ abstract class AbstractGroupByAction extends AbstractToggleAction {
 			workspaceSettings.toolWindowGroupBy = _groupBy.name();
 			panel.getBugTreePanel().setGroupBy(GroupBy.getSortOrderGroup(_groupBy));
 		}
+	}
+
+	@Override
+	public @NotNull ActionUpdateThread getActionUpdateThread() {
+		return ActionUpdateThread.EDT;
 	}
 }

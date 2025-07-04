@@ -26,7 +26,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.roots.CompilerProjectExtension;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.impl.OrderEntryUtil;
+import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.vfs.VirtualFileSystem;
+import com.intellij.openapi.vfs.newvfs.ArchiveFileSystem;
+import com.intellij.openapi.vfs.newvfs.impl.FsRoot;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiManager;
@@ -41,6 +48,7 @@ import org.jetbrains.plugins.spotbugs.resources.ResourcesLoader;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -191,6 +199,21 @@ public final class FindBugsProjects {
 					}
 				}
 			}
+
+			ModuleRootManager.getInstance(m).orderEntries().forEachLibrary(lib->{
+				VirtualFile[] libFiles = lib.getFiles(OrderRootType.CLASSES);
+				for (VirtualFile vf: libFiles) {
+					VirtualFileSystem vfs = vf.getFileSystem();
+					if (vfs instanceof ArchiveFileSystem afs) {
+						VirtualFile localVf = afs.getLocalByEntry(vf);
+						if (localVf != null) {
+							ret.add(localVf);
+						}
+					}
+				}
+				return true;
+			});
+
 			if (!added) {
 				if (!projectFallbackExecuted) {
 					projectFallbackExecuted = true;

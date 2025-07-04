@@ -20,9 +20,10 @@
  */
 
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 
 plugins {
-    id "org.jetbrains.intellij.platform" version "2.2.1"
+    id "org.jetbrains.intellij.platform" version "2.6.0"
     id 'jacoco'
 }
 
@@ -53,7 +54,12 @@ jacoco {
 }
 
 runIde {
-    systemProperties(["jdk.util.zip.ensureTrailingSlash":false])
+    systemProperties([
+            "jdk.util.zip.ensureTrailingSlash":false,
+            "findbugs.debug":true,
+            "findbugs2.builder.debug":true,
+            "findbugs2.builder.verbose":true,
+    ])
 }
 
 configurations {
@@ -66,14 +72,14 @@ dependencies {
         def type = providers.gradleProperty('platformType')
         def version = providers.gradleProperty('platformVersion')
 
-        create(type, version)
+        create(IntelliJPlatformType.@Companion.fromCode(type.get()), version)
 
         bundledPlugin 'com.intellij.java'
 
         testFramework TestFrameworkType.Platform.INSTANCE
         testFramework TestFrameworkType.Plugin.Java.INSTANCE
     }
-    implementation ('com.github.spotbugs:spotbugs:4.9.0') {
+    implementation ('com.github.spotbugs:spotbugs:4.9.3') {
         exclude group: 'xml-apis', module: 'xml-apis'
         exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
         exclude group: 'org.apache.logging.log4j', module: 'log4j-core'

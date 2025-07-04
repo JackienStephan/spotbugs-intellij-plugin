@@ -25,6 +25,7 @@ import com.intellij.diagnostic.IdeMessagePanel;
 import com.intellij.notification.*;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.project.Project;
@@ -88,8 +89,10 @@ public final class ToolWindowPanel extends JPanel implements AnalysisStateListen
 			DaemonCodeAnalyzer.getInstance(_project).restart();
 		});
 		MessageBusManager.subscribe(project, this, NewBugListener.TOPIC, (bug, analyzedClassCount) -> {
-			_bugTreePanel.addNode(bug);
-			_bugTreePanel.updateRootNode(analyzedClassCount);
+			ApplicationManager.getApplication().invokeLater(() -> {
+				_bugTreePanel.addNode(bug);
+				_bugTreePanel.updateRootNode(analyzedClassCount);
+			});
 		});
 	}
 
@@ -217,10 +220,12 @@ public final class ToolWindowPanel extends JPanel implements AnalysisStateListen
 
 	@Override
 	public void analysisStarted() {
-		EditorFactory.getInstance().refreshAllEditors();
-		DaemonCodeAnalyzer.getInstance(_project).restart();
-		updateLayout(false);
-		clear();
+		ApplicationManager.getApplication().invokeLater(() -> {
+			EditorFactory.getInstance().refreshAllEditors();
+			DaemonCodeAnalyzer.getInstance(_project).restart();
+			updateLayout(false);
+			clear();
+		});
 	}
 
 	@Override
@@ -291,8 +296,10 @@ public final class ToolWindowPanel extends JPanel implements AnalysisStateListen
 							.notify(_project);
 		}
 
-		EditorFactory.getInstance().refreshAllEditors();
-		DaemonCodeAnalyzer.getInstance(_project).restart();
+		ApplicationManager.getApplication().invokeLater(() -> {
+			EditorFactory.getInstance().refreshAllEditors();
+			DaemonCodeAnalyzer.getInstance(_project).restart();
+		});
 	}
 
 	private ComponentListener createComponentListener() {

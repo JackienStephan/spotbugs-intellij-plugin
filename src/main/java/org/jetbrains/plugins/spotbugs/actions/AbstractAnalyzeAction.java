@@ -19,6 +19,7 @@
  */
 package org.jetbrains.plugins.spotbugs.actions;
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
@@ -151,5 +152,10 @@ abstract class AbstractAnalyzeAction extends AbstractAction {
 				StringUtil.capitalizeWords(ResourcesLoader.getString("analysis.includeTests.title"), true),
 				UIUtil.getQuestionIcon()
 		);
+	}
+
+	@Override
+	public @NotNull ActionUpdateThread getActionUpdateThread() {
+		return ActionUpdateThread.BGT;
 	}
 }

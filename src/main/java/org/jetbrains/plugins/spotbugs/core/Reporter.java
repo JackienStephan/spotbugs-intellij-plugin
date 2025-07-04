@@ -127,7 +127,9 @@ final class Reporter extends AbstractBugReporter implements FindBugsProgress {
 		if (!projectFilterSettings.displayWarning(bug)) {
 			return;
 		}
-		_bugCollection.add(bug);
+		if (!_bugCollection.add(bug)) {
+			return;
+		}
 		bugCount++;
 		observeClass(bug.getPrimaryClass().getClassDescriptor());
 
