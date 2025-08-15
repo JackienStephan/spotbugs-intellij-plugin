@@ -19,7 +19,7 @@
   ~ If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<idea-plugin url="https://github.com/JackienStephan/spotbugs-intellij-plugin">
+<idea-plugin url="https://github.com/JetBrains/spotbugs-intellij-plugin">
     <name>SpotBugs</name>
     <description>
         <![CDATA[
