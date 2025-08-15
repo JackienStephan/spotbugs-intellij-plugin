@@ -39,16 +39,25 @@ public class VersionManager {
 		private final long major;
 		private final long minor;
 		private final long build;
+		private final String patch;
 
-		private Version(long major, long minor, long build) {
+		private Version(long major, long minor, long build, String patch) {
 			this.major = major;
 			this.minor = minor;
 			this.build = build;
+			this.patch = patch;
+		}
+
+		private Version(long major, long minor, long build) {
+			this(major, minor, build, "");
 		}
 		
 		@Override
 		public String toString() {
-			return major + "." + minor + "." + build;
+			if (patch == null || patch.isEmpty()) {
+				return major + "." + minor + "." + build;
+			}
+			return major + "." + minor + "." + build + "." + patch;
 		}
 
 		@SuppressWarnings("SameParameterValue")
@@ -68,11 +77,17 @@ public class VersionManager {
 				throw new RuntimeException("Unable to read version from '"+PROPERTIES_FILE+"': build corrupted");
 			}
 			String[] components = version.split("\\.");
-			if (components.length != 3) {
+			if (components.length != 3 && components.length != 4) {
 				throw new RuntimeException("Invalid version: "+version);
 			}
 			try {
-				return new Version(Long.parseLong(components[0]), Long.parseLong(components[1]), Long.parseLong(components[2]));
+				long major = Long.parseLong(components[0]);
+				long minor = Long.parseLong(components[1]);
+				long build = Long.parseLong(components[2]);
+				if (components.length == 4 && !components[3].isEmpty()) {
+					return new Version(major, minor, build, components[3].trim());
+				}
+				return new Version(major, minor, build);
 			} catch (NumberFormatException e) {
 				throw new RuntimeException("Invalid version: "+version);
 			}
@@ -81,7 +96,7 @@ public class VersionManager {
 
 	private static final String NAME = FindBugsPluginConstants.PLUGIN_NAME;
 	
-	private static final String WEBSITE = "https://github.com/JetBrains/spotbugs-intellij-plugin/";
+	private static final String WEBSITE = "https://github.com/JackienStephan/spotbugs-intellij-plugin/";
 
 	private static final String DOWNLOAD_WEBSITE = "https://plugins.jetbrains.com/plugin/14014-spotbugs";
 
